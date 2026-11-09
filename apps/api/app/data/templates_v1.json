@@ -1,0 +1,316 @@
+{
+  "fields": [
+    {
+      "key": "full_name",
+      "options": null,
+      "ord": 1,
+      "prompts": {
+        "en": {
+          "ask": "What is your full name?",
+          "hint": "Say your first and last name."
+        },
+        "hi": {
+          "ask": "आपका पूरा नाम क्या है?",
+          "hint": "अपना पहला और आखिरी नाम बताइए।"
+        }
+      },
+      "required": true,
+      "type": "text",
+      "validation": {
+        "min_length": 2
+      }
+    },
+    {
+      "key": "date_of_birth",
+      "options": null,
+      "ord": 2,
+      "prompts": {
+        "en": {
+          "ask": "What is your date of birth? You can say it like 12th March 2004.",
+          "hint": "Say the day, month, and year."
+        },
+        "hi": {
+          "ask": "आपकी जन्मतिथि क्या है? दिन, महीना और साल बताइए, जैसे 12 मार्च 2004।",
+          "hint": "दिन, महीना और साल बोलिए।"
+        }
+      },
+      "required": true,
+      "type": "date",
+      "validation": {
+        "format": "ISO-8601",
+        "max_age": 100,
+        "min_age": 10
+      }
+    },
+    {
+      "key": "gender",
+      "options": [
+        {
+          "en": "Female",
+          "hi": "महिला",
+          "key": "F"
+        },
+        {
+          "en": "Male",
+          "hi": "पुरुष",
+          "key": "M"
+        },
+        {
+          "en": "Other",
+          "hi": "अन्य",
+          "key": "X"
+        },
+        {
+          "en": "Prefer not to say",
+          "hi": "बताना नहीं चाहते",
+          "key": "undisclosed"
+        }
+      ],
+      "ord": 3,
+      "prompts": {
+        "en": {
+          "ask": "What is your gender? Female, male, or other?",
+          "hint": "Say female, male, other, or prefer not to say."
+        },
+        "hi": {
+          "ask": "आपका लिंग क्या है? महिला, पुरुष, या अन्य?",
+          "hint": "महिला, पुरुष, अन्य, या बताना नहीं चाहते — कहिए।"
+        }
+      },
+      "required": true,
+      "type": "choice",
+      "validation": null
+    },
+    {
+      "key": "phone",
+      "options": null,
+      "ord": 4,
+      "prompts": {
+        "en": {
+          "ask": "What is your mobile number? Say the digits slowly.",
+          "hint": "Say each digit clearly, with small pauses."
+        },
+        "hi": {
+          "ask": "आपका मोबाइल नंबर क्या है? अंक धीरे-धीरे बोलिए।",
+          "hint": "हर अंक साफ-साफ बोलिए।"
+        }
+      },
+      "required": true,
+      "type": "phone",
+      "validation": {
+        "max_digits": 15,
+        "min_digits": 7
+      }
+    },
+    {
+      "key": "email",
+      "options": null,
+      "ord": 5,
+      "prompts": {
+        "en": {
+          "ask": "What is your email address? You can type this one — tap 'Type' below, or spell it out.",
+          "hint": "Typing is recommended; or spell it letter by letter."
+        },
+        "hi": {
+          "ask": "आपका ईमेल पता क्या है? आप इसे लिख सकते हैं — नीचे 'Type' दबाइए — या बोलकर बताइए।",
+          "hint": "लिखना बेहतर रहेगा; या अक्षर-अक्षर बोलिए।"
+        }
+      },
+      "required": true,
+      "type": "email",
+      "validation": {
+        "format": "email",
+        "modality": "typed_first"
+      }
+    },
+    {
+      "key": "university",
+      "options": null,
+      "ord": 6,
+      "prompts": {
+        "en": {
+          "ask": "Which university do you study at?",
+          "hint": "Say your university or college name."
+        },
+        "hi": {
+          "ask": "आप किस विश्वविद्यालय में पढ़ते हैं?",
+          "hint": "अपने विश्वविद्यालय या कॉलेज का नाम बताइए।"
+        }
+      },
+      "required": true,
+      "type": "text",
+      "validation": {
+        "min_length": 2
+      }
+    },
+    {
+      "key": "course_of_study",
+      "options": null,
+      "ord": 7,
+      "prompts": {
+        "en": {
+          "ask": "What course are you studying?",
+          "hint": "For example: B.Tech Computer Science."
+        },
+        "hi": {
+          "ask": "आप कौन सा कोर्स कर रहे हैं?",
+          "hint": "जैसे: बी.टेक कंप्यूटर साइंस।"
+        }
+      },
+      "required": true,
+      "type": "text",
+      "validation": {
+        "min_length": 2
+      }
+    },
+    {
+      "key": "year_of_study",
+      "options": [
+        {
+          "en": "1st year",
+          "hi": "पहला वर्ष",
+          "key": "y1"
+        },
+        {
+          "en": "2nd year",
+          "hi": "दूसरा वर्ष",
+          "key": "y2"
+        },
+        {
+          "en": "3rd year",
+          "hi": "तीसरा वर्ष",
+          "key": "y3"
+        },
+        {
+          "en": "4th year",
+          "hi": "चौथा वर्ष",
+          "key": "y4"
+        },
+        {
+          "en": "Other",
+          "hi": "अन्य",
+          "key": "other"
+        }
+      ],
+      "ord": 8,
+      "prompts": {
+        "en": {
+          "ask": "Which year are you in? First, second, third, or fourth?",
+          "hint": "Say first, second, third, fourth, or other."
+        },
+        "hi": {
+          "ask": "आप किस वर्ष में हैं? पहला, दूसरा, तीसरा या चौथा?",
+          "hint": "पहला, दूसरा, तीसरा, चौथा, या अन्य कहिए।"
+        }
+      },
+      "required": true,
+      "type": "choice",
+      "validation": null
+    },
+    {
+      "key": "cgpa",
+      "options": null,
+      "ord": 9,
+      "prompts": {
+        "en": {
+          "ask": "What is your CGPA or percentage?",
+          "hint": "Say your CGPA out of 10, or your percentage."
+        },
+        "hi": {
+          "ask": "आपका सीजीपीए या प्रतिशत क्या है?",
+          "hint": "10 में से सीजीपीए, या प्रतिशत बताइए।"
+        }
+      },
+      "required": true,
+      "type": "number",
+      "validation": {
+        "scale_detect": true
+      }
+    },
+    {
+      "key": "family_income",
+      "options": [
+        {
+          "en": "Under $10,000",
+          "hi": "2 लाख से कम",
+          "key": "i1"
+        },
+        {
+          "en": "$10,000 to $30,000",
+          "hi": "2 से 5 लाख",
+          "key": "i2"
+        },
+        {
+          "en": "$30,000 to $60,000",
+          "hi": "5 से 10 लाख",
+          "key": "i3"
+        },
+        {
+          "en": "Above $60,000",
+          "hi": "10 लाख से अधिक",
+          "key": "i4"
+        }
+      ],
+      "ord": 10,
+      "prompts": {
+        "en": {
+          "ask": "What is your family's annual income? Under $10,000; $10,000 to $30,000; $30,000 to $60,000; or above $60,000?",
+          "hint": "Pick the range that fits best."
+        },
+        "hi": {
+          "ask": "आपके परिवार की वार्षिक आय कितनी है? 2 लाख से कम; 2 से 5 लाख; 5 से 10 लाख; या 10 लाख से अधिक?",
+          "hint": "सबसे सही विकल्प चुनिए।"
+        }
+      },
+      "required": true,
+      "type": "choice",
+      "validation": null
+    },
+    {
+      "key": "need_statement",
+      "options": null,
+      "ord": 11,
+      "prompts": {
+        "en": {
+          "ask": "Why do you need this scholarship? Tell me briefly in one or two sentences.",
+          "hint": "One or two sentences is enough."
+        },
+        "hi": {
+          "ask": "आपको यह छात्रवृत्ति क्यों चाहिए? एक या दो वाक्यों में संक्षेप में बताइए।",
+          "hint": "एक या दो वाक्य ही काफी हैं।"
+        }
+      },
+      "required": true,
+      "type": "longtext",
+      "validation": {
+        "max_length": 500
+      }
+    },
+    {
+      "key": "consent",
+      "options": null,
+      "ord": 12,
+      "prompts": {
+        "en": {
+          "ask": "Declaration: I confirm that the information I have given is true. Do you agree? Say yes or no.",
+          "hint": "Say yes to agree, or no to stop."
+        },
+        "hi": {
+          "ask": "घोषणा: मैं पुष्टि करता/करती हूँ कि दी गई जानकारी सत्य है। क्या आप सहमत हैं? हाँ या नहीं कहें।",
+          "hint": "सहमत हैं तो हाँ, नहीं तो नहीं कहें।"
+        }
+      },
+      "required": true,
+      "type": "boolean",
+      "validation": {
+        "must_be": true
+      }
+    }
+  ],
+  "id": "scholarship-v1",
+  "name": {
+    "en": "Scholarship Application",
+    "hi": "छात्रवृत्ति आवेदन"
+  },
+  "version": 1
+}

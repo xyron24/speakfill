@@ -1,0 +1,27 @@
+# never commit real secrets
+.env
+.env.local
+.env.*.local
+
+# node
+node_modules/
+.next/
+out/
+*.log
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# local data volumes / caches (root-only: must not match apps/**/data/)
+/data/
+*.mp3
+*.pdf
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
