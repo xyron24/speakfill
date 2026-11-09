@@ -33,7 +33,7 @@ _ensure_test_db()
 
 from app.db import get_db  # noqa: E402
 from app.main import app  # noqa: E402
-from app.models import Answer, Base, Session  # noqa: E402
+from app.models import Answer, Base, Feedback, Job, Session, Submission  # noqa: E402
 
 test_engine = create_engine(TEST_URL)
 TestingSession = sessionmaker(bind=test_engine, autoflush=False, expire_on_commit=False)
@@ -53,9 +53,9 @@ app.dependency_overrides[get_db] = _override_db
 
 @pytest.fixture()
 def client():
-    # Clean slate per test, then re-seed the template.
+    # Clean slate per test, then re-seed the template (children before parents).
     with TestingSession() as db:
-        for model in (Answer, Session):
+        for model in (Answer, Job, Submission, Feedback, Session):
             for row in db.query(model).all():
                 db.delete(row)
         db.commit()

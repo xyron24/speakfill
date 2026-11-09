@@ -263,18 +263,28 @@ class SessionService:
         s = self._get_session(session_id)
         fields = self._fields(s)
         confirmed = self._confirmed_map(s)
-        answers = [
-            {
-                "key": f.field_key,
-                "ord": f.ord,
-                "confirmed": f.field_key in confirmed,
-                "value": (confirmed[f.field_key].extracted or {}).get("value")
-                if f.field_key in confirmed
-                else None,
-                "source": confirmed[f.field_key].source if f.field_key in confirmed else None,
-            }
-            for f in fields
-        ]
+        latest: dict[str, Answer] = {}
+        for row in (
+            self.db.execute(
+                select(Answer).where(Answer.session_id == s.id).order_by(Answer.id)
+            )
+            .scalars()
+            .all()
+        ):
+            latest[row.field_key] = row
+        answers = []
+        for f in fields:
+            shown = confirmed.get(f.field_key) or latest.get(f.field_key)
+            answers.append(
+                {
+                    "key": f.field_key,
+                    "ord": f.ord,
+                    "confirmed": f.field_key in confirmed,
+                    "pending": shown is not None and not (f.field_key in confirmed),
+                    "value": (shown.extracted or {}).get("value") if shown else None,
+                    "source": shown.source if shown else None,
+                }
+            )
         missing = [f.field_key for f in fields if f.required and f.field_key not in confirmed]
         consent = confirmed.get("consent")
         blocked = bool(missing) or (consent is not None and (consent.extracted or {}).get("value") is False)

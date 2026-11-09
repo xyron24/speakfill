@@ -29,10 +29,31 @@ class NormalizeResult(BaseModel):
     clarify_reason: str | None = None
 
 
+class VisionError(Exception):
+    """Vision extraction failure (no model, bad image, invalid JSON)."""
+
+
+class VisionField(BaseModel):
+    key: str  # schema key, or "UNKNOWN" for unmappable content
+    value: Any = None
+    confidence: float = 0.0
+
+
+class VisionResult(BaseModel):
+    fields: list[VisionField] = []
+
+
+VISION_SYSTEM_PROMPT = """You read a photographed paper form. Output strict JSON: {"fields": [{"key": "<schema key or UNKNOWN>", "value": <typed>, "confidence": 0..1}]}.
+Rules: only use keys from the provided schema; anything else → "UNKNOWN" (quarantined, never forced into schema); dates→ISO YYYY-MM-DD; digits only for phones; booleans→true/false; choice→canonical option key; numbers→{"value": <float>, "scale": "cgpa"|"percent"}; confidence below 0.5 must still be returned."""
+
+
 class LLMAdapter:
     def normalize(
         self, field_schema: dict, transcript: str, locale: str, previous_value: Any = None
     ) -> NormalizeResult:
+        raise NotImplementedError
+
+    def extract_fields(self, image_png: bytes, schema: list[dict]) -> VisionResult:
         raise NotImplementedError
 
 
@@ -76,6 +97,9 @@ def _clarify(reason: str, confidence: float = 0.2) -> NormalizeResult:
 
 class StubAdapter(LLMAdapter):
     """Deterministic rules. Good enough for tests/demos; the live adapter handles the wild."""
+
+    def extract_fields(self, image_png: bytes, schema: list[dict]) -> VisionResult:
+        raise VisionError("stub adapter has no vision model (tests monkeypatch this method)")
 
     def normalize(self, field_schema, transcript, locale, previous_value=None) -> NormalizeResult:
         t = (transcript or "").strip()
@@ -218,14 +242,42 @@ class OpenAICompatAdapter(LLMAdapter):
             raise HTTPException(502, "LLM returned invalid JSON twice")
         return NormalizeResult.model_validate(data)
 
-    def _chat(self, messages: list[dict]) -> dict | None:
+    def extract_fields(self, image_png: bytes, schema: list[dict]) -> VisionResult:
+        import base64
+
+        data_url = "data:image/png;base64," + base64.b64encode(image_png).decode()
+        user_text = json.dumps(
+            {"schema": schema, "instruction": "Extract all visible filled values."},
+            ensure_ascii=False,
+        )
+        messages = [
+            {"role": "system", "content": VISION_SYSTEM_PROMPT},
+            {"role": "user", "content": [
+                {"type": "text", "text": user_text},
+                {"type": "image_url", "image_url": {"url": data_url}},
+            ]},
+        ]
+        data = self._chat(messages, timeout=60.0)
+        if data is None:  # repair retry, once
+            data = self._chat(
+                messages + [{"role": "user", "content": "Return ONLY the JSON object."}],
+                timeout=60.0,
+            )
+        if data is None:
+            raise VisionError("vision model returned invalid JSON twice")
+        try:
+            return VisionResult.model_validate(data)
+        except ValueError as e:
+            raise VisionError(f"vision JSON failed validation: {e}") from e
+
+    def _chat(self, messages: list[dict], timeout: float = 30.0) -> dict | None:
         try:
             r = httpx.post(
                 self.url,
                 headers={"Authorization": f"Bearer {settings.llm_api_key}"},
                 json={"model": self.model, "temperature": 0,
                       "response_format": {"type": "json_object"}, "messages": messages},
-                timeout=30.0,
+                timeout=timeout,
             )
             r.raise_for_status()
             return json.loads(r.json()["choices"][0]["message"]["content"])
