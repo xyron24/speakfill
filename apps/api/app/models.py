@@ -82,6 +82,7 @@ class Submission(Base):
         UUID(as_uuid=True), ForeignKey("sessions.id"), unique=True, index=True
     )
     pdf_path: Mapped[str] = mapped_column(Text)
+    answers_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
     completed_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True))
 
 

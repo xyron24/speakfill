@@ -81,10 +81,12 @@ _MONTHS = {
     "जनवरी": 1, "फरवरी": 2, "मार्च": 3, "अप्रैल": 4, "मई": 5, "जून": 6,
     "जुलाई": 7, "अगस्त": 8, "सितंबर": 9, "अक्टूबर": 10, "नवंबर": 11, "दिसंबर": 12,
 }
-_MONTH_NAMES = [
-    "", "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
-]
+_MONTH_NAMES = {
+    "en": ["", "January", "February", "March", "April", "May", "June",
+           "July", "August", "September", "October", "November", "December"],
+    "hi": ["", "जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून",
+           "जुलाई", "अगस्त", "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर"],
+}
 _DATE_WORD_RE = re.compile(r"(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z\u0900-\u097F]+)\s+(\d{4})")
 _DATE_ISO_RE = re.compile(r"^(\d{4})-(\d{2})-(\d{2})$")
 _DATE_NUMERIC_RE = re.compile(r"^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})$")
@@ -139,7 +141,7 @@ class StubAdapter(LLMAdapter):
                 return _clarify("unclear")
             return NormalizeResult(value=v, readable=v, confidence=0.9)
         if ftype == "date":
-            return self._date(t)
+            return self._date(t, locale)
         if ftype == "phone":
             digits = re.sub(r"\D", "", t)
             if 7 <= len(digits) <= 15:
@@ -169,23 +171,24 @@ class StubAdapter(LLMAdapter):
                 yn = match_yes_no(t, "hi" if locale == "en" else "en")
             if yn is None:
                 return _clarify("unclear_yes_no")
-            word = "yes" if yn else "no"
+            word = ("हाँ" if yn else "नहीं") if locale == "hi" else ("yes" if yn else "no")
             return NormalizeResult(value=yn, readable=word, confidence=0.9)
         return _clarify("unsupported_type")
 
-    def _date(self, t: str) -> NormalizeResult:
+    def _date(self, t: str, locale: str = "en") -> NormalizeResult:
+        months = _MONTH_NAMES.get(locale, _MONTH_NAMES["en"])
         m = _DATE_ISO_RE.match(t.strip())
         if m:
             y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
             return NormalizeResult(value=f"{y:04d}-{mo:02d}-{d:02d}",
-                                   readable=f"{d} {_MONTH_NAMES[mo]} {y}", confidence=0.9)
+                                   readable=f"{d} {months[mo]} {y}", confidence=0.9)
         m = _DATE_WORD_RE.search(t)
         if m:
             d, mon, y = int(m.group(1)), m.group(2).lower(), int(m.group(3))
             mo = _MONTHS.get(mon)
             if mo and 1 <= d <= 31 and 1900 <= y <= 2100:
                 return NormalizeResult(value=f"{y:04d}-{mo:02d}-{d:02d}",
-                                       readable=f"{d} {_MONTH_NAMES[mo]} {y}", confidence=0.9)
+                                       readable=f"{d} {months[mo]} {y}", confidence=0.9)
             return _clarify("invalid_date")
         if _DATE_NUMERIC_RE.match(t.strip()):
             return _clarify("ambiguous_date")

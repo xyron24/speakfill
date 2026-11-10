@@ -37,6 +37,8 @@ from app.models import Answer, Base, Feedback, Job, Session, Submission  # noqa:
 
 test_engine = create_engine(TEST_URL)
 TestingSession = sessionmaker(bind=test_engine, autoflush=False, expire_on_commit=False)
+# Rebuild the test schema every run: create_all alone won't add new columns.
+Base.metadata.drop_all(test_engine)
 Base.metadata.create_all(test_engine)
 
 
@@ -53,11 +55,12 @@ app.dependency_overrides[get_db] = _override_db
 
 @pytest.fixture()
 def client():
-    # Clean slate per test, then re-seed the template (children before parents).
+    # Clean slate per test, then re-seed the template. Bulk deletes execute
+    # immediately in loop order (children before parents); ORM-object deletes
+    # would flush in table-name order with no relationships to sort by.
     with TestingSession() as db:
         for model in (Answer, Job, Submission, Feedback, Session):
-            for row in db.query(model).all():
-                db.delete(row)
+            db.query(model).delete(synchronize_session=False)
         db.commit()
     from app.seed import seed
 
