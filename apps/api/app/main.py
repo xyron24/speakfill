@@ -9,15 +9,17 @@ from app.routes.feedback import router as feedback_router
 from app.routes.photos import router as photos_router
 from app.routes.review import router as review_router
 from app.routes.sessions import router as sessions_router
+from app.routes.stats import router as stats_router
 from app.routes.templates import router as templates_router
 
-app = FastAPI(title="SpeakFill API", version="0.5.0")
+app = FastAPI(title="SpeakFill API", version="0.6.0")
 app.include_router(templates_router)
 app.include_router(sessions_router)
 app.include_router(audio_router)
 app.include_router(photos_router)
 app.include_router(review_router)
 app.include_router(feedback_router)
+app.include_router(stats_router)
 
 app.add_middleware(
     CORSMiddleware,

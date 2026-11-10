@@ -77,6 +77,7 @@ schema keys; anything unmappable is quarantined, never forced into the form.
 | POST | /api/sessions/{id}/export | Create submission (idempotent) |
 | GET | /api/submissions/{id}.pdf | Download filled PDF |
 | POST | /api/feedback | `{session_id, country, rating, comment?}` |
+| GET | /api/stats | Traction counters (sessions, feedback by country, rating) |
 
 ## Project structure
 
