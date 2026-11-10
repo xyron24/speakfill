@@ -20,20 +20,22 @@ export default function HealthPage() {
   }, []);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-950 text-slate-100">
-      <h1 className="text-2xl font-bold">System health</h1>
-      <p className="text-sm text-slate-400">browser → Caddy → FastAPI</p>
-      <span
-        className={`rounded px-3 py-1 text-sm font-medium ${
-          ok === null ? "bg-slate-700" : ok ? "bg-emerald-600" : "bg-red-600"
+    <div className="mx-auto max-w-xl py-6">
+      <h1 className="text-2xl font-extrabold text-slate-950">System health</h1>
+      <p className="mt-1 text-slate-600">browser → Caddy → API</p>
+      <p
+        className={`mt-3 inline-block rounded-full px-3 py-1 text-sm font-bold text-white ${
+          ok === null ? "bg-slate-500" : ok ? "bg-teal-700" : "bg-red-600"
         }`}
       >
         {ok === null ? "checking…" : ok ? "API reachable" : "API unreachable"}
-      </span>
-      <pre className="max-w-xl overflow-auto rounded bg-slate-900 p-4 text-xs">{body}</pre>
-      <a className="text-sm text-indigo-400 hover:underline" href="/">
+      </p>
+      <pre className="mt-3 max-w-xl overflow-auto rounded-xl bg-slate-900 p-4 text-xs text-slate-100">
+        {body}
+      </pre>
+      <a className="mt-3 inline-block font-bold text-teal-800 underline" href="/">
         ← back
       </a>
-    </main>
+    </div>
   );
 }

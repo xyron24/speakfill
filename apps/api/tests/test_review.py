@@ -139,3 +139,34 @@ def test_feedback_ok_and_validation(client):
 def test_unknown_pdf_404s(client):
     assert client.get("/api/submissions/00000000-0000-0000-0000-000000000000.pdf").status_code == 404
     assert client.get("/api/submissions/not-a-uuid.pdf").status_code == 404
+
+
+def test_goto_reopens_review_and_confirm_returns_to_review(client):
+    sid = _new_session(client)
+    _walk_to_review(client, sid)
+    assert client.get(f"/api/sessions/{sid}").json()["status"] == "review"
+
+    g = client.post(f"/api/sessions/{sid}/goto", json={"ord": 2}).json()
+    assert g["status"] == "active" and g["current_field"]["key"] == "date_of_birth"
+
+    a = client.post(f"/api/sessions/{sid}/answer", json={"text": "1st January 2000"}).json()
+    assert a["value"] == "2000-01-01"
+    c = client.post(f"/api/sessions/{sid}/confirm", json={"accepted": True}).json()
+    assert c["status"] == "review"  # everything else already confirmed
+
+    review = client.get(f"/api/sessions/{sid}/review").json()
+    dob = next(f for f in review["fields"] if f["key"] == "date_of_birth")
+    assert dob["value"] == "2000-01-01"
+
+    assert client.post(f"/api/sessions/{sid}/goto", json={"ord": 99}).status_code == 404
+
+
+def test_prompt_audio_serves_cached_ask(client):
+    r = client.get("/api/audio/prompt/scholarship-v1/1?language=en")
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert "full name" in body["text"].lower()
+    assert body["audio_url"].endswith(".wav")
+    assert client.get(body["audio_url"]).status_code == 200
+    assert client.get("/api/audio/prompt/nope/1").status_code == 404
+    assert client.get("/api/audio/prompt/scholarship-v1/1?language=xx").status_code == 422

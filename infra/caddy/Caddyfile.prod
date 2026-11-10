@@ -1,0 +1,24 @@
+# Production Caddy profile: {$DOMAIN} with automatic TLS.
+# Selected via CADDYFILE=Caddyfile.prod in the server .env (see docker-compose.yml).
+{$DOMAIN} {
+	encode gzip
+
+	request_body {
+		max_size 10MB
+	}
+
+	header {
+		Strict-Transport-Security "max-age=3153600; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	handle /api/* {
+		reverse_proxy api:8000
+	}
+	handle {
+		reverse_proxy web:3000
+	}
+}

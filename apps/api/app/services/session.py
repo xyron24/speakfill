@@ -229,6 +229,7 @@ class SessionService:
 
         pending.confirmed = True
         value = (pending.extracted or {}).get("value")
+        self.db.flush()  # autoflush is off: make this confirm visible to queries below
 
         # Consent refused: park in review, blocked, with a restart offer.
         if field.field_key == "consent" and value is False:
@@ -244,19 +245,23 @@ class SessionService:
             return {"accepted": True, "status": "review", "blocked": True, "message": msg}
 
         fields = self._fields(s)
-        remaining = [f for f in fields if f.ord > s.current_ord and f.required]
+        confirmed_now = self._confirmed_map(s)
+        remaining = [f for f in fields if f.required and f.field_key not in confirmed_now]
         if not remaining:
             s.status = "review"
             s.updated_at = _now()
             self.db.commit()
             return {"accepted": True, "status": "review", "blocked": False}
-        s.current_ord = remaining[0].ord
+        # Next unconfirmed field after the current one (wrap to earliest if none ahead).
+        ahead = [f for f in remaining if f.ord > s.current_ord]
+        nxt = min(ahead or remaining, key=lambda f: f.ord)
+        s.current_ord = nxt.ord
         s.updated_at = _now()
         self.db.commit()
         return {
             "accepted": True,
             "status": s.status,
-            "current_field": field_payload(remaining[0], s.language),
+            "current_field": field_payload(nxt, s.language),
         }
 
     def state(self, session_id: uuid.UUID) -> dict:
@@ -299,6 +304,26 @@ class SessionService:
             "current_ord": s.current_ord,
             "current_field": field_payload(current, s.language) if current and s.status == "active" else None,
             "answers": answers,
+        }
+
+    def goto(self, session_id: uuid.UUID, ord: int) -> dict:
+        """Jump to another field (review edit flow). Re-opens review sessions."""
+        s = self._get_session(session_id)
+        if s.status in ("done", "abandoned"):
+            raise HTTPException(409, f"session is {s.status}")
+        fields = self._fields(s)
+        target = next((f for f in fields if f.ord == ord), None)
+        if target is None:
+            raise HTTPException(404, f"no field ord {ord} in this template")
+        s.current_ord = ord
+        if s.status == "review":
+            s.status = "active"
+        s.updated_at = _now()
+        self.db.commit()
+        return {
+            "session_id": str(s.id),
+            "status": s.status,
+            "current_field": field_payload(target, s.language),
         }
 
     def restart(self, session_id: uuid.UUID) -> dict:

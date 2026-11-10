@@ -7,8 +7,10 @@ services:
       - "8080:80"
       - "8443:443"
     volumes:
-      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./infra/caddy/${CADDYFILE:-Caddyfile}:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
+    environment:
+      DOMAIN: ${DOMAIN:-}
     depends_on:
       - web
       - api

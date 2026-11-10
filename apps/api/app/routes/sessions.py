@@ -144,3 +144,17 @@ def restart(
     session_id: uuid.UUID, db: DBSession = Depends(get_db), llm: LLMAdapter = Depends(get_llm)
 ):
     return SessionService(db, llm).restart(session_id)
+
+
+class GotoBody(BaseModel):
+    ord: int
+
+
+@router.post("/sessions/{session_id}/goto")
+def goto(
+    session_id: uuid.UUID,
+    body: GotoBody,
+    db: DBSession = Depends(get_db),
+    llm: LLMAdapter = Depends(get_llm),
+):
+    return SessionService(db, llm).goto(session_id, body.ord)
