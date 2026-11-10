@@ -1,0 +1,12 @@
+case 1: PASS (value='Vaibhav Pandey' conf=0.9)
+case 2: PASS (value='राहुल शर्मा' conf=0.9)
+case 3: PASS (value='2004-03-12' conf=0.9)
+case 4: PASS (value=None conf=0.2)
+case 5: PASS (value='9876543210' conf=0.85)
+case 6: PASS (value='Sharma' conf=0.7)
+case 7: PASS (value=None conf=0.2)
+case 8: PASS (value=None conf=0.2)
+case 9: PASS (value=None conf=0.0)
+case 10a: PASS (value=True conf=0.9)
+case 10b: PASS (value=False conf=0.9)
+eval: 11/11 passed [stub]

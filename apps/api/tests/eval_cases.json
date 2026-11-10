@@ -1,0 +1,93 @@
+{
+  "_note": "Normalization eval set: 10 cases run through normalize() via scripts/run_evals.py. Pass bar: 10/10 twice in a row.",
+  "cases": [
+    {
+      "id": 1,
+      "field": {"key": "full_name", "type": "text"},
+      "transcript": "My name is Vaibhav Pandey",
+      "locale": "en",
+      "previous_value": null,
+      "expect": {"value": "Vaibhav Pandey", "needs_clarify": false, "min_confidence": 0.8}
+    },
+    {
+      "id": 2,
+      "field": {"key": "full_name", "type": "text"},
+      "transcript": "मेरा नाम राहुल शर्मा है",
+      "locale": "hi",
+      "previous_value": null,
+      "expect": {"value": "राहुल शर्मा", "needs_clarify": false}
+    },
+    {
+      "id": 3,
+      "field": {"key": "date_of_birth", "type": "date"},
+      "transcript": "12th March 2004",
+      "locale": "en",
+      "previous_value": null,
+      "expect": {"value": "2004-03-12", "needs_clarify": false}
+    },
+    {
+      "id": 4,
+      "field": {"key": "date_of_birth", "type": "date"},
+      "transcript": "05/06/2003",
+      "locale": "en",
+      "previous_value": null,
+      "expect": {"needs_clarify": true, "clarify_reason": "ambiguous_date"}
+    },
+    {
+      "id": 5,
+      "field": {"key": "phone", "type": "phone"},
+      "transcript": "98 76 54 32 10",
+      "locale": "en",
+      "previous_value": null,
+      "expect": {"value": "9876543210", "needs_clarify": false}
+    },
+    {
+      "id": 6,
+      "field": {"key": "full_name", "type": "text"},
+      "transcript": "No, I said Sharma not Verma",
+      "locale": "en",
+      "previous_value": "Verma",
+      "expect": {"value_contains": "Sharma", "needs_clarify": false}
+    },
+    {
+      "id": 7,
+      "field": {"key": "full_name", "type": "text"},
+      "transcript": "I don't know",
+      "locale": "en",
+      "previous_value": null,
+      "expect": {"value": null, "needs_clarify": true, "clarify_reason": "unknown_ask_hint"}
+    },
+    {
+      "id": 8,
+      "field": {"key": "full_name", "type": "text"},
+      "transcript": "uhh... hmm",
+      "locale": "en",
+      "previous_value": null,
+      "expect": {"needs_clarify": true, "clarify_reason": "unclear"}
+    },
+    {
+      "id": 9,
+      "field": {"key": "email", "type": "email"},
+      "transcript": "type it",
+      "locale": "en",
+      "previous_value": null,
+      "expect": {"needs_clarify": true, "clarify_reason": "user_requested_typed"}
+    },
+    {
+      "id": "10a",
+      "field": {"key": "consent", "type": "boolean"},
+      "transcript": "yes, I agree",
+      "locale": "en",
+      "previous_value": null,
+      "expect": {"value": true, "needs_clarify": false}
+    },
+    {
+      "id": "10b",
+      "field": {"key": "consent", "type": "boolean"},
+      "transcript": "no",
+      "locale": "en",
+      "previous_value": null,
+      "expect": {"value": false, "needs_clarify": false}
+    }
+  ]
+}

@@ -66,13 +66,17 @@ _TYPED_REQUESTS = {"type it", "type", "i'll type", "i will type", "let me type",
                    "likhunga", "likh leti hoon", "likh leta hoon", "type karoonga"}
 _CORRECTION_RES = [
     re.compile(r"^\s*(?:no,?\s+)?i\s+(?:said|meant)\s+(.+)$", re.IGNORECASE),
+    re.compile(r"^\s*(?:no\s+wait|sorry|actually)\s*,?\s*(?:it'?s\s+|i\s+meant\s+)?(.+)$", re.IGNORECASE),
+    re.compile(r"^\s*i\s+mean\s+(.+)$", re.IGNORECASE),
     re.compile(r"^\s*nahin,?\s+(.+)$", re.IGNORECASE),
     re.compile(r"^\s*no,?\s+(.+)$", re.IGNORECASE),
 ]
 _LEADER_RES = [
-    re.compile(r"^(?:my name is|this is|i am|i'm)\s+", re.IGNORECASE),
-    re.compile(r"^(?:mera naam|mera name|main hoon|mein hoon)\s+", re.IGNORECASE),
+    re.compile(r"^(?:my name is|my name's|this is|i am|i'm|i go by|call me)\s+", re.IGNORECASE),
+    re.compile(r"^(?:mera naam(?: hai)?|mera name|main hoon|mein hoon)\s+", re.IGNORECASE),
+    re.compile(r"^(?:मेरा नाम(?: है)?|मैं हूँ|मै हूँ)\s+"),
 ]
+_TRAILING_COPULA_RE = re.compile(r"\s+हैं?\s*[।.]?$")
 _MONTHS = {
     "january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6,
     "july": 7, "august": 8, "september": 9, "october": 10, "november": 11, "december": 12,
@@ -111,7 +115,8 @@ class StubAdapter(LLMAdapter):
             return _clarify("user_requested_typed", 0.0)
         if low in _UNKNOWN or any(p in low for p in _UNKNOWN):
             return _clarify("unknown_ask_hint")
-        if len(t) < 2 or low in _FILLERS or all(w in _FILLERS for w in low.split()):
+        words = re.sub(r"[^a-z\u0900-\u097F ]", "", low).split()
+        if len(t) < 2 or (words and all(w in _FILLERS for w in words)):
             return _clarify("unclear")
 
         if previous_value is not None:
@@ -133,6 +138,7 @@ class StubAdapter(LLMAdapter):
             v = t
             for rx in _LEADER_RES:
                 v = rx.sub("", v).strip()
+            v = _TRAILING_COPULA_RE.sub("", v).strip()
             v = v.strip(" .")
             max_len = (field_schema.get("validation") or {}).get("max_length")
             if max_len and len(v) > max_len:

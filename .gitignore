@@ -8,6 +8,7 @@ node_modules/
 .next/
 out/
 *.log
+!apps/api/tests/eval_logs/*.log
 *.tsbuildinfo
 
 # python
