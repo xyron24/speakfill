@@ -102,6 +102,9 @@ export default function Home() {
           </p>
         )}
         {!template && !error && <p className="mt-3 text-sm text-slate-600">Loading…</p>}
+        <p className="mt-4 text-sm font-semibold text-slate-600">
+          Free to try · No account needed · Works on your phone · English and Hindi
+        </p>
       </div>
 
       <div className="space-y-6">
@@ -127,6 +130,34 @@ export default function Home() {
               </li>
             ))}
           </ol>
+        </section>
+
+        <section aria-label="Example exchange" className="rounded-xl border border-slate-300 bg-white p-5">
+          <h2 className="text-lg font-extrabold text-slate-900">
+            Hear how it goes <span className="text-sm font-semibold text-slate-500">(example)</span>
+          </h2>
+          <div className="mt-3 space-y-2 text-sm">
+            <div className="flex justify-start">
+              <p className="max-w-[90%] rounded-2xl rounded-bl-md border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800">
+                What is your full name?
+              </p>
+            </div>
+            <div className="flex justify-end">
+              <p className="max-w-[90%] rounded-2xl rounded-br-md bg-teal-700 px-3 py-2 font-medium text-white">
+                Aarav Sharma
+              </p>
+            </div>
+            <div className="flex justify-start">
+              <p className="max-w-[90%] rounded-2xl rounded-bl-md border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800">
+                I heard Aarav Sharma. Correct? Say yes or no.
+              </p>
+            </div>
+            <div className="flex justify-end">
+              <p className="max-w-[90%] rounded-2xl rounded-br-md bg-teal-700 px-3 py-2 font-medium text-white">
+                Yes
+              </p>
+            </div>
+          </div>
         </section>
 
         {template && (

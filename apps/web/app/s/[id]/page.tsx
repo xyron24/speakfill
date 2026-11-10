@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
   ApiError,
@@ -14,6 +14,7 @@ import { browserSpeechSupported, listenOnce } from "../../../lib/speech";
 import AudioPlayButton from "../../../components/AudioPlayButton";
 import ConfirmBar from "../../../components/ConfirmBar";
 import FormPreview from "../../../components/FormPreview";
+import HistoryThread, { type HistoryItem } from "../../../components/HistoryThread";
 import PhotoUpload from "../../../components/PhotoUpload";
 import ProgressBar from "../../../components/ProgressBar";
 import VoiceRecorder from "../../../components/VoiceRecorder";
@@ -40,6 +41,12 @@ function InterviewInner() {
   const [needTap, setNeedTap] = useState(false);
   const [showPhoto, setShowPhoto] = useState(search.get("photo") === "1");
   const [listening, setListening] = useState(false);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const historyId = useRef(0);
+  const pushHistory = (role: HistoryItem["role"], text: string) => {
+    historyId.current += 1;
+    setHistory((h) => [...h.slice(-29), { id: historyId.current, role, text }]);
+  };
 
   const load = useCallback(async () => {
     try {
@@ -66,6 +73,7 @@ function InterviewInner() {
     setBanner(null);
     setTypedMode(f.type === "email"); // typed-first field
     setNeedTap(false);
+    pushHistory("assistant", f.prompt_text);
     let cancelled = false;
     api
       .promptAudio(server.template_id, f.ord, server.language)
@@ -90,6 +98,8 @@ function InterviewInner() {
 
   const handleAnswer = (r: AnswerResult) => {
     if (r.typed_nudge) setTypedMode(true);
+    if (r.transcript) pushHistory("user", r.transcript);
+    pushHistory("assistant", r.next_prompt);
     if (r.needs_clarify) {
       setTurn(null);
       setBanner({ kind: "info", text: r.next_prompt });
@@ -140,6 +150,8 @@ function InterviewInner() {
     setBanner(null);
     try {
       const c = await api.confirm(sid, accepted);
+      pushHistory("user", accepted ? "Yes" : "No");
+      if (!accepted && c.next_prompt) pushHistory("assistant", c.next_prompt);
       setTurn(null);
       setTypedText("");
       await load();
@@ -278,6 +290,8 @@ function InterviewInner() {
             </div>
           </section>
 
+          <HistoryThread items={history} />
+
           {turn ? (
             <ConfirmBar
               answer={turn}
@@ -286,7 +300,7 @@ function InterviewInner() {
               onVoiceConfirm={voiceConfirm}
             />
           ) : (
-            <section aria-label="Your answer" className="rounded-xl border border-slate-300 bg-white p-5">
+            <section aria-label="Your answer" className="rounded-xl border border-slate-300 bg-white p-5 max-lg:sticky max-lg:bottom-2 max-lg:shadow-xl max-lg:z-10">
               {typedMode ? (
                 <div>
                   <label className="block text-sm font-bold text-slate-800" htmlFor="typed-answer">

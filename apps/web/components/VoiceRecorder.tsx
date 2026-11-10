@@ -11,9 +11,12 @@ function pickMime(): string {
   return opts.find((m) => MediaRecorder.isTypeSupported(m)) ?? "";
 }
 
+type Phase = "idle" | "acquiring" | "recording";
+
 /**
- * Press-and-hold (or toggle) voice recorder with level meter, 30 s cap,
- * and a helpful mic-denied state. Calls onBlob with the finished clip.
+ * Two-phase voice recorder. Tapping first acquires the microphone (which can
+ * take up to a second), and only when the stream is live does it show
+ * "speak now" — so users never talk over the setup delay and clip word one.
  */
 export default function VoiceRecorder({
   onBlob,
@@ -26,7 +29,7 @@ export default function VoiceRecorder({
   compact?: boolean;
   holdToTalk?: boolean;
 }) {
-  const [recording, setRecording] = useState(false);
+  const [phase, setPhase] = useState<Phase>("idle");
   const [denied, setDenied] = useState(false);
   const [unsupported, setUnsupported] = useState(false);
   const [seconds, setSeconds] = useState(0);
@@ -37,6 +40,7 @@ export default function VoiceRecorder({
   const barRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number>(0);
   const ctxRef = useRef<AudioContext | null>(null);
+  const recording = phase === "recording";
 
   const cleanup = () => {
     cancelAnimationFrame(rafRef.current);
@@ -53,12 +57,15 @@ export default function VoiceRecorder({
 
   const stop = (submit: boolean) => {
     const rec = recRef.current;
-    if (!rec) return;
+    if (!rec) {
+      setPhase("idle");
+      return;
+    }
     rec.onstop = () => {
       const mime = rec.mimeType || "audio/webm";
       const blob = new Blob(audioPartsRef.current, { type: mime.split(";")[0] });
       cleanup();
-      setRecording(false);
+      setPhase("idle");
       setSeconds(0);
       if (submit && blob.size > 0) onBlob(blob);
     };
@@ -66,19 +73,22 @@ export default function VoiceRecorder({
       rec.stop();
     } catch {
       cleanup();
-      setRecording(false);
+      setPhase("idle");
     }
   };
 
   const start = async () => {
-    if (recording || disabled) return;
+    if (phase !== "idle" || disabled) return;
     if (typeof MediaRecorder === "undefined" || !navigator.mediaDevices?.getUserMedia) {
       setUnsupported(true);
       return;
     }
     setDenied(false);
+    setPhase("acquiring");
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      });
       streamRef.current = stream;
       audioPartsRef.current = [];
       const rec = new MediaRecorder(stream, pickMime() ? { mimeType: pickMime() } : undefined);
@@ -87,7 +97,7 @@ export default function VoiceRecorder({
         if (e.data.size > 0) audioPartsRef.current.push(e.data);
       };
       rec.start(250);
-      setRecording(true);
+      setPhase("recording");
       setSeconds(0);
       const t0 = Date.now();
       timerRef.current = setInterval(() => {
@@ -95,7 +105,7 @@ export default function VoiceRecorder({
         setSeconds(s);
         if (s >= MAX_SECONDS) stop(true); // auto-submit at cap
       }, 250);
-      // Level meter (skipped animation when reduced motion is preferred).
+      // Level meter (static bar when reduced motion is preferred).
       if (!prefersReducedMotion()) {
         try {
           const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -118,6 +128,8 @@ export default function VoiceRecorder({
         }
       }
     } catch {
+      cleanup();
+      setPhase("idle");
       setDenied(true);
     }
   };
@@ -130,7 +142,7 @@ export default function VoiceRecorder({
     );
   }
 
-  if (denied && !recording) {
+  if (denied && phase === "idle") {
     return (
       <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
         <p className="font-bold">Microphone blocked.</p>
@@ -154,15 +166,17 @@ export default function VoiceRecorder({
     <div className="flex items-center gap-3">
       <button
         type="button"
-        disabled={disabled}
-        aria-label={recording ? "Stop recording" : holdToTalk ? "Hold to talk" : "Start recording"}
+        disabled={disabled || phase === "acquiring"}
+        aria-label={
+          recording ? "Stop recording" : holdToTalk ? "Hold to talk" : "Start recording"
+        }
         aria-pressed={recording}
         onClick={() => (recording ? stop(true) : start())}
-        onMouseDown={holdToTalk && !recording ? start : undefined}
+        onMouseDown={holdToTalk && phase === "idle" ? start : undefined}
         onMouseUp={holdToTalk && recording ? () => stop(true) : undefined}
-        onTouchStart={holdToTalk && !recording ? start : undefined}
+        onTouchStart={holdToTalk && phase === "idle" ? start : undefined}
         onTouchEnd={holdToTalk && recording ? () => stop(true) : undefined}
-        className={`${size} shrink-0 rounded-full transition-colors disabled:opacity-40 ${
+        className={`${size} shrink-0 rounded-full transition-colors disabled:opacity-60 ${
           recording ? "animate-pulse bg-red-600" : "bg-teal-700 hover:bg-teal-800"
         } flex items-center justify-center text-white`}
       >
@@ -173,10 +187,14 @@ export default function VoiceRecorder({
         </svg>
       </button>
       <div className="min-w-0 flex-1">
-        {recording ? (
+        {phase === "acquiring" ? (
+          <p className="text-sm font-bold text-slate-600" role="status">
+            Preparing microphone… wait for the cue.
+          </p>
+        ) : recording ? (
           <>
             <p className="text-sm font-bold text-red-700">
-              Listening… {seconds}s / {MAX_SECONDS}s
+              Listening — speak now ({seconds}s / {MAX_SECONDS}s)
             </p>
             <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-200">
               <div ref={barRef} className="h-full rounded-full bg-red-500" style={{ width: "5%" }} />
@@ -191,7 +209,7 @@ export default function VoiceRecorder({
           </>
         ) : (
           <p className="text-sm font-medium text-slate-600">
-            {holdToTalk ? "Hold the button and speak" : "Tap the mic and speak your answer"}
+            {holdToTalk ? "Hold the button and speak" : "Tap the mic, wait for the cue, then speak"}
           </p>
         )}
       </div>
