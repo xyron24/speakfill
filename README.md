@@ -1,4 +1,4 @@
-# SpeakFill — Speak. Confirm. Done.
+# SpeakFill - Speak. Confirm. Done.
 
 Voice-first, multilingual form filling. Speak your answers in your own language, confirm
 each field as it reads back, and get a filled, ready-to-submit PDF. Built for
@@ -6,13 +6,13 @@ each field as it reads back, and get a filled, ready-to-submit PDF. Built for
 
 ## Demo
 
-- **Live app:** run locally (see below) and open http://localhost:8080 — production URL is added on deploy day.
+- **Live app:** run locally (see below) and open http://localhost:8080 - production URL is added on deploy day.
 - **Demo video:** unlisted link added before submission.
-- **Fastest tour:** open the app and press **60-second demo** — two fields come pre-filled, you answer the third by voice.
+- **Fastest tour:** open the app and press **60-second demo** - two fields come pre-filled, you answer the third by voice.
 
 ## The problem
 
-Forms gate opportunity — scholarships, admissions, clinic intake, government services —
+Forms gate opportunity - scholarships, admissions, clinic intake, government services -
 yet they assume the applicant reads dense instructions, writes in English, and never
 slips on field 17 of 20. That locks out low-literacy and non-English speakers, blind
 and low-vision users, elderly users, and international students. Translators and
@@ -21,10 +21,10 @@ correct document. SpeakFill does exactly that.
 
 ## Features
 
-- **Voice interview loop** — each question asked aloud, answers understood, every value read back for yes/no confirmation (English + Hindi)
-- **Photo pre-fill** — photograph a paper form; visible values pre-fill and get voice-confirmed one by one
-- **Live form preview** — watch fields fill and confirm in real time
-- **Full review + read-aloud** — hear the whole form before finishing; jump back to edit any field
+- **Voice interview loop** - each question asked aloud, answers understood, every value read back for yes/no confirmation (English + Hindi)
+- **Photo pre-fill** - photograph a paper form; visible values pre-fill and get voice-confirmed one by one
+- **Live form preview** - watch fields fill and confirm in real time
+- **Full review + read-aloud** - hear the whole form before finishing; jump back to edit any field
 - **Filled PDF export** — submission record with per-field source badges and a verify footer
 - **Typed fallback everywhere** — every field works typed; mic-denied and STT-outage paths stay usable
 - **One-tap feedback** — country + rating + comment after every completion
